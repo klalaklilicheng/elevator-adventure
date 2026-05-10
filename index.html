@@ -1,0 +1,614 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>电梯大冒险 · Elevator Adventure</title>
+<style>
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;user-select:none;-webkit-user-select:none;margin:0;padding:0}
+html,body{height:100%;overflow:hidden;font-family:-apple-system,"PingFang SC","Helvetica Neue",sans-serif;background:#1a1a2e}
+body{display:flex;align-items:center;justify-content:center;touch-action:manipulation}
+
+:root{
+  --floors:10;
+  --accent:#ff6b35;
+  --gold:#ffd166;
+  --green:#06d6a0;
+  --blue:#118ab2;
+  --red:#ef476f;
+}
+
+#game{position:relative;width:100vw;height:100vh;max-width:500px;overflow:hidden;background:linear-gradient(180deg,#0f0c29 0%,#302b63 50%,#24243e 100%)}
+
+/* === 开始页 === */
+#intro{position:absolute;inset:0;z-index:500;display:flex;flex-direction:column;align-items:center;justify-content:center;background:linear-gradient(135deg,#667eea,#764ba2);color:#fff;text-align:center;padding:24px;transition:opacity .5s}
+#intro.hide{opacity:0;pointer-events:none}
+#intro h1{font-size:clamp(28px,8vw,42px);margin-bottom:8px;text-shadow:0 3px 12px rgba(0,0,0,.3)}
+#intro h2{font-size:clamp(16px,4vw,20px);opacity:.9;font-weight:400;margin-bottom:32px}
+.intro-elevator{font-size:80px;margin-bottom:20px;animation:float 2s ease-in-out infinite}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-12px)}}
+#start-btn{background:#fff;color:#764ba2;border:none;padding:18px 48px;border-radius:999px;font-size:22px;font-weight:800;cursor:pointer;box-shadow:0 8px 24px rgba(0,0,0,.2);transition:transform .1s}
+#start-btn:active{transform:scale(.95)}
+
+/* === HUD === */
+#hud{position:absolute;top:env(safe-area-inset-top,12px);left:12px;right:12px;display:flex;justify-content:space-between;align-items:center;z-index:50;padding-top:8px}
+.hud-box{background:rgba(255,255,255,.12);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,.2);border-radius:16px;padding:8px 16px;color:#fff;font-weight:700;font-size:16px;display:flex;align-items:center;gap:6px}
+#level-display{font-size:13px;opacity:.8}
+#stars-display span{color:var(--gold)}
+.hud-btn{background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);border-radius:50%;width:40px;height:40px;color:#fff;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+
+/* === 任务栏 === */
+#task-bar{position:absolute;top:70px;left:12px;right:12px;z-index:40;display:flex;align-items:center;gap:10px;background:rgba(255,255,255,.1);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.15);border-radius:18px;padding:10px 16px}
+#task-bar.pop{animation:taskPop .4s ease-out}
+@keyframes taskPop{0%{transform:scale(.85);opacity:0}100%{transform:scale(1);opacity:1}}
+.task-queue{display:flex;gap:6px;flex:1;overflow-x:auto;scrollbar-width:none}
+.task-queue::-webkit-scrollbar{display:none}
+.task-item{display:flex;align-items:center;gap:4px;background:rgba(255,255,255,.15);border-radius:12px;padding:6px 10px;font-size:14px;color:#fff;white-space:nowrap;border:2px solid transparent;transition:border-color .3s}
+.task-item.active{border-color:var(--gold);background:rgba(255,215,102,.15)}
+.task-item .emoji{font-size:22px}
+.task-item .floor-tag{background:var(--accent);border-radius:8px;padding:2px 8px;font-weight:800;font-size:13px}
+
+/* === 建筑主体 === */
+#building{position:absolute;top:125px;bottom:220px;left:10px;right:10px;display:flex;border-radius:12px;overflow:hidden}
+
+/* 楼层列表 */
+#floors-col{flex:1;display:flex;flex-direction:column-reverse;background:rgba(255,255,255,.04);border-right:2px solid rgba(255,255,255,.1)}
+.floor-row{flex:1;display:flex;align-items:center;padding:0 8px;border-bottom:1px solid rgba(255,255,255,.05);position:relative}
+.floor-num{font-size:12px;font-weight:700;color:rgba(255,255,255,.5);width:24px;text-align:center}
+.floor-waiting{display:flex;gap:2px;margin-left:4px;flex:1}
+.floor-waiting .waiting-animal{font-size:clamp(18px,4vw,28px);animation:waitBounce 1.5s ease-in-out infinite;opacity:0;transform:translateX(20px);transition:all .4s}
+.floor-waiting .waiting-animal.show{opacity:1;transform:translateX(0)}
+@keyframes waitBounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-3px)}}
+
+/* 电梯井 */
+#shaft{width:clamp(60px,16vw,80px);background:rgba(0,0,0,.3);position:relative;border-left:2px solid rgba(255,255,255,.1)}
+
+/* LED 楼层显示器 */
+#led{position:absolute;top:-32px;left:50%;transform:translateX(-50%);background:#111;border:2px solid #333;border-radius:8px;padding:4px 12px;z-index:10}
+#led-num{font-family:"Courier New",monospace;font-size:24px;font-weight:900;color:#0f0;text-shadow:0 0 8px #0f0;letter-spacing:2px}
+#led-arrow{font-size:14px;color:#0f0;text-shadow:0 0 6px #0f0}
+
+/* 电梯厢 */
+#cabin{position:absolute;left:4px;right:4px;height:calc(100% / var(--floors));background:linear-gradient(180deg,#e8e8e8,#ccc);border-radius:6px;border:2px solid #888;bottom:0;transition:bottom .8s cubic-bezier(.4,0,.2,1);display:flex;align-items:center;justify-content:center;overflow:hidden}
+#cabin.moving{background:linear-gradient(180deg,#ddd,#bbb)}
+.cabin-door{position:absolute;top:3px;bottom:3px;width:calc(50% - 4px);background:linear-gradient(180deg,#666,#444);transition:transform .5s ease;border-radius:3px}
+.cabin-door.left{left:3px}
+.cabin-door.right{right:3px}
+#cabin.open .cabin-door.left{transform:translateX(-105%)}
+#cabin.open .cabin-door.right{transform:translateX(105%)}
+#cabin-passengers{z-index:1;display:flex;gap:1px;font-size:clamp(16px,4vw,24px)}
+#cabin-count{position:absolute;bottom:2px;right:4px;font-size:10px;color:#fff;background:rgba(0,0,0,.5);border-radius:4px;padding:1px 4px;opacity:0;transition:opacity .3s}
+#cabin-count.show{opacity:1}
+
+/* 超重警报 */
+#overweight{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);background:var(--red);color:#fff;font-weight:800;font-size:14px;padding:6px 14px;border-radius:10px;opacity:0;pointer-events:none;z-index:20;transition:opacity .3s}
+#overweight.show{opacity:1;animation:pulse .5s ease-in-out infinite}
+@keyframes pulse{0%,100%{transform:translate(-50%,-50%) scale(1)}50%{transform:translate(-50%,-50%) scale(1.05)}}
+
+/* === 控制面板 === */
+#panel{position:absolute;bottom:env(safe-area-inset-bottom,12px);left:8px;right:8px;z-index:30;padding-bottom:8px}
+#panel-inner{background:rgba(20,20,40,.9);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,.1);border-radius:20px;padding:14px}
+
+/* 楼层按钮网格 */
+#floor-btns{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin-bottom:10px}
+.fbtn{aspect-ratio:1;border-radius:50%;border:2px solid rgba(255,255,255,.2);background:rgba(255,255,255,.08);color:#fff;font-size:clamp(16px,4vw,22px);font-weight:800;cursor:pointer;transition:all .15s;display:flex;align-items:center;justify-content:center;position:relative}
+.fbtn:active{transform:scale(.9)}
+.fbtn.lit{background:var(--gold);color:#333;border-color:var(--gold);box-shadow:0 0 16px rgba(255,209,102,.5)}
+.fbtn.wrong{animation:btnShake .3s;background:rgba(239,71,111,.3);border-color:var(--red)}
+@keyframes btnShake{0%,100%{transform:translateX(0)}25%{transform:translateX(-4px)}75%{transform:translateX(4px)}}
+.fbtn .en{position:absolute;bottom:-14px;font-size:8px;color:rgba(255,255,255,.5);font-weight:600;letter-spacing:.5px}
+
+/* 控制按钮行 */
+#ctrl-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+.ctrl-btn{padding:12px 8px;border:none;border-radius:14px;font-size:14px;font-weight:700;color:#fff;cursor:pointer;transition:all .15s;display:flex;flex-direction:column;align-items:center;gap:2px}
+.ctrl-btn:active{transform:scale(.95)}
+.ctrl-btn.open-btn{background:var(--green)}
+.ctrl-btn.close-btn{background:var(--red)}
+.ctrl-btn.emergency-btn{background:#ff9800;position:relative}
+.ctrl-btn small{font-size:10px;opacity:.8}
+.ctrl-btn.disabled{opacity:.3;pointer-events:none}
+
+/* 紧急按钮闪烁 */
+.emergency-btn.flash{animation:emergencyFlash .4s ease-in-out 3}
+@keyframes emergencyFlash{0%,100%{background:#ff9800}50%{background:#f44336}}
+
+/* === 庆祝 === */
+#celebrate{position:absolute;inset:0;display:none;align-items:center;justify-content:center;z-index:200;background:rgba(0,0,0,.6);pointer-events:none}
+#celebrate.show{display:flex}
+.celebrate-card{background:#fff;border-radius:24px;padding:30px 40px;text-align:center;animation:celebPop .5s ease-out}
+@keyframes celebPop{0%{transform:scale(.5);opacity:0}100%{transform:scale(1);opacity:1}}
+.celebrate-card .big{font-size:64px}
+.celebrate-card .praise{font-size:24px;font-weight:800;color:var(--accent);margin-top:8px}
+.celebrate-card .sub{font-size:16px;color:#888;margin-top:4px}
+.celebrate-card .combo{font-size:14px;color:var(--blue);margin-top:8px;font-weight:700}
+
+/* 连击 */
+#combo-display{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:40px;font-weight:900;color:var(--gold);text-shadow:0 0 20px rgba(255,209,102,.8);opacity:0;pointer-events:none;z-index:100;transition:all .3s}
+#combo-display.show{opacity:1;animation:comboUp .8s ease-out}
+@keyframes comboUp{0%{transform:translate(-50%,-50%) scale(2);opacity:0}30%{opacity:1}100%{transform:translate(-50%,-80%) scale(1);opacity:0}}
+
+/* 计时器 */
+#timer{position:absolute;top:125px;right:14px;z-index:45;display:flex;flex-direction:column;align-items:center;gap:4px}
+.timer-ring{width:48px;height:48px;border-radius:50%;border:4px solid rgba(255,255,255,.1);position:relative;display:flex;align-items:center;justify-content:center}
+.timer-ring svg{position:absolute;inset:-4px;transform:rotate(-90deg)}
+.timer-ring circle{fill:none;stroke:var(--green);stroke-width:4;stroke-linecap:round;transition:stroke-dashoffset .5s linear,stroke .3s}
+.timer-ring circle.warning{stroke:var(--red)}
+.timer-text{font-size:14px;font-weight:800;color:#fff}
+#bonus-text{font-size:11px;color:var(--gold);font-weight:700;opacity:0;transition:opacity .3s}
+#bonus-text.show{opacity:1}
+
+/* 关卡过渡 */
+#level-up{position:absolute;inset:0;display:none;align-items:center;justify-content:center;z-index:300;background:rgba(0,0,0,.8);pointer-events:none}
+#level-up.show{display:flex}
+.level-card{text-align:center;color:#fff;animation:celebPop .6s ease-out}
+.level-card .level-num{font-size:60px;font-weight:900;background:linear-gradient(135deg,var(--gold),var(--accent));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.level-card .level-title{font-size:22px;margin-top:8px;opacity:.9}
+
+/* confetti */
+.confetti-piece{position:absolute;width:8px;height:12px;pointer-events:none;z-index:199;border-radius:2px}
+</style>
+</head>
+<body>
+<div id="game">
+
+<div id="intro">
+  <div class="intro-elevator">🛗</div>
+  <h1>电梯大冒险</h1>
+  <h2>Elevator Adventure</h2>
+  <button id="start-btn">开始冒险 · Start</button>
+</div>
+
+<div id="hud">
+  <div class="hud-box" id="stars-display"><span>⭐</span> <span id="star-count">0</span></div>
+  <div class="hud-box" id="level-display">关卡 1</div>
+  <button class="hud-btn" id="sound-btn">🔊</button>
+</div>
+
+<div id="task-bar"><div class="task-queue" id="task-queue"></div></div>
+
+<div id="timer">
+  <div class="timer-ring">
+    <svg viewBox="0 0 56 56"><circle cx="28" cy="28" r="24" stroke-dasharray="150.8" stroke-dashoffset="0" id="timer-circle"/></svg>
+    <span class="timer-text" id="timer-text">30</span>
+  </div>
+  <span id="bonus-text">+5 时间奖励</span>
+</div>
+
+<div id="building">
+  <div id="floors-col"></div>
+  <div id="shaft">
+    <div id="led"><span id="led-arrow">■</span> <span id="led-num">1</span></div>
+    <div id="cabin">
+      <div class="cabin-door left"></div>
+      <div class="cabin-door right"></div>
+      <div id="cabin-passengers"></div>
+      <div id="cabin-count">0/3</div>
+      <div id="overweight">超重!</div>
+    </div>
+  </div>
+</div>
+
+<div id="panel"><div id="panel-inner">
+  <div id="floor-btns"></div>
+  <div id="ctrl-row">
+    <button class="ctrl-btn open-btn" id="btn-open">开门<small>OPEN</small></button>
+    <button class="ctrl-btn emergency-btn" id="btn-emergency">紧急<small>STOP</small></button>
+    <button class="ctrl-btn close-btn" id="btn-close">关门<small>CLOSE</small></button>
+  </div>
+</div></div>
+
+<div id="celebrate"><div class="celebrate-card"><div class="big">🎉</div><div class="praise" id="praise-zh"></div><div class="sub" id="praise-en"></div><div class="combo" id="praise-combo"></div></div></div>
+<div id="combo-display"></div>
+<div id="level-up"><div class="level-card"><div class="level-num" id="lvl-num">2</div><div class="level-title" id="lvl-title">关卡 2</div></div></div>
+
+</div>
+
+<script>
+'use strict';
+
+const FLOORS = 10;
+const MAX_CAPACITY = 3;
+const NUM_EN = ['','one','two','three','four','five','six','seven','eight','nine','ten'];
+const ANIMALS = ['🐰','🐻','🐼','🦁','🐵','🦊','🐯','🐸','🐶','🐱','🐷','🐨','🦄','🐙','🐢'];
+const PRAISE_ZH = ['太棒了','送到啦','完美','你真厉害','超级棒','好厉害'];
+const PRAISE_EN = ['Great job','Well done','Perfect','Amazing','Super','Excellent'];
+
+const $ = s => document.querySelector(s);
+const $$ = s => document.querySelectorAll(s);
+
+/* === 状态 === */
+const state = {
+  floor: 1,
+  doorOpen: false,
+  busy: false,
+  moving: false,
+  passengers: [],    // [{animal, dropFloor}]
+  tasks: [],         // [{animal, pickup, drop, id}]
+  stars: 0,
+  combo: 0,
+  level: 1,
+  deliveries: 0,     // 本关送达数
+  targetDeliveries: 3,
+  timeLeft: 30,
+  timerActive: false,
+  taskIdCounter: 0,
+};
+
+/* === 音频 === */
+let audioCtx = null;
+function ensureAudio(){
+  if(!audioCtx) try{audioCtx=new(window.AudioContext||window.webkitAudioContext)()}catch(e){}
+  if(audioCtx&&audioCtx.state==='suspended')audioCtx.resume();
+}
+function tone(freq,dur=.12,type='sine',vol=.15){
+  if(!audioCtx)return;
+  try{const o=audioCtx.createOscillator(),g=audioCtx.createGain();o.type=type;o.frequency.value=freq;g.gain.value=vol;o.connect(g);g.connect(audioCtx.destination);o.start();g.gain.exponentialRampToValueAtTime(.001,audioCtx.currentTime+dur);o.stop(audioCtx.currentTime+dur)}catch(e){}
+}
+function ding(){tone(880,.15);setTimeout(()=>tone(1100,.12),.1*1000)}
+function buzz(){tone(150,.25,'sawtooth',.1)}
+function blip(){tone(700,.06)}
+function chime(){tone(523,.1);setTimeout(()=>tone(659,.1),100);setTimeout(()=>tone(784,.15),200)}
+function emergencySound(){for(let i=0;i<3;i++)setTimeout(()=>tone(440,.15,'square',.12),i*200)}
+
+/* === 语音 === */
+const synth=window.speechSynthesis;
+let zhV=null,enV=null;
+function pickVoices(){if(!synth)return;const v=synth.getVoices();zhV=v.find(x=>/zh|cmn/i.test(x.lang))||null;enV=v.find(x=>/en[-_]?(US|GB)/i.test(x.lang))||v.find(x=>x.lang&&x.lang.startsWith('en'))||null}
+if(synth){pickVoices();synth.onvoiceschanged=pickVoices}
+const sq=[];let spk=false;
+function enq(text,lang){sq.push({text,lang});pump()}
+function pump(){if(spk||!sq.length||!synth)return;const{text,lang}=sq.shift();spk=true;try{const u=new SpeechSynthesisUtterance(text);u.lang=lang;u.rate=lang.startsWith('zh')?1:.85;u.pitch=1.1;if(lang.startsWith('zh')&&zhV)u.voice=zhV;if(lang.startsWith('en')&&enV)u.voice=enV;u.onend=u.onerror=()=>{spk=false;setTimeout(pump,60)};synth.speak(u)}catch(e){spk=false;setTimeout(pump,50)}}
+function clearSp(){sq.length=0;if(synth)try{synth.cancel()}catch(e){}spk=false}
+function say(zh,en){if(zh)enq(zh,'zh-CN');if(en)enq(en,'en-US')}
+document.addEventListener('visibilitychange',()=>{if(document.hidden)clearSp()});
+
+/* === DOM 构建 === */
+const floorsCol=$('#floors-col');
+for(let f=1;f<=FLOORS;f++){
+  const row=document.createElement('div');
+  row.className='floor-row';row.dataset.floor=f;
+  row.innerHTML=`<span class="floor-num">${f}</span><div class="floor-waiting" id="fw-${f}"></div>`;
+  floorsCol.appendChild(row);
+}
+
+const floorBtnsEl=$('#floor-btns');
+const fbtns=[];
+for(let f=1;f<=FLOORS;f++){
+  const b=document.createElement('button');
+  b.className='fbtn';b.dataset.floor=f;
+  b.innerHTML=`${f}<span class="en">${NUM_EN[f].toUpperCase()}</span>`;
+  b.addEventListener('click',()=>onFloor(f,b));
+  floorBtnsEl.appendChild(b);
+  fbtns.push(b);
+}
+
+$('#btn-open').addEventListener('click',onOpen);
+$('#btn-close').addEventListener('click',onClose);
+$('#btn-emergency').addEventListener('click',onEmergency);
+$('#sound-btn').addEventListener('click',()=>{ensureAudio();repeatHint()});
+
+/* === LED === */
+function updateLED(floor,dir){
+  $('#led-num').textContent=floor;
+  $('#led-arrow').textContent=dir==='up'?'▲':dir==='down'?'▼':'■';
+}
+
+/* === 电梯位置 === */
+function placeCabin(floor,animate=true){
+  const cabin=$('#cabin');
+  if(!animate){cabin.style.transition='none';cabin.style.bottom=((floor-1)/FLOORS*100)+'%';void cabin.offsetHeight;cabin.style.transition=''}
+  else cabin.style.bottom=((floor-1)/FLOORS*100)+'%';
+}
+
+/* === 任务系统 === */
+function spawnTask(){
+  const maxTasks=state.level<=2?2:state.level<=4?3:4;
+  if(state.tasks.length>=maxTasks)return;
+  let pickup,drop;
+  do{pickup=1+Math.floor(Math.random()*FLOORS);drop=1+Math.floor(Math.random()*FLOORS)}while(pickup===drop);
+  const animal=ANIMALS[Math.floor(Math.random()*ANIMALS.length)];
+  const id=++state.taskIdCounter;
+  state.tasks.push({animal,pickup,drop,id});
+  showWaitingAnimal(pickup,animal,id);
+  renderTaskBar();
+  if(state.tasks.length===1)say(`${animal}在${pickup}楼等电梯`,`Go to floor ${NUM_EN[pickup]}`);
+}
+
+function showWaitingAnimal(floor,animal,id){
+  const container=$(`#fw-${floor}`);
+  const el=document.createElement('span');
+  el.className='waiting-animal';el.textContent=animal;el.dataset.taskId=id;
+  container.appendChild(el);
+  setTimeout(()=>el.classList.add('show'),50);
+}
+
+function renderTaskBar(){
+  const q=$('#task-queue');
+  q.innerHTML='';
+  state.tasks.forEach((t,i)=>{
+    const div=document.createElement('div');
+    div.className='task-item'+(i===0?' active':'');
+    div.innerHTML=`<span class="emoji">${t.animal}</span><span class="floor-tag">${t.pickup}→${t.drop}</span>`;
+    q.appendChild(div);
+  });
+}
+
+/* === 楼层按钮 === */
+function onFloor(floor,btn){
+  ensureAudio();
+  if(state.busy||state.moving)return;
+  blip();
+  if(state.doorOpen){btn.classList.add('wrong');setTimeout(()=>btn.classList.remove('wrong'),300);say('先关门','Close door first');return}
+  if(floor===state.floor){say(`已经在${floor}楼`,`Already at floor ${NUM_EN[floor]}`);return}
+  fbtns.forEach(b=>b.classList.remove('lit'));
+  btn.classList.add('lit');
+  say(String(floor),NUM_EN[floor]);
+  moveTo(floor);
+}
+
+function moveTo(floor){
+  state.moving=true;state.busy=true;
+  const dir=floor>state.floor?'up':'down';
+  const cabin=$('#cabin');
+  cabin.classList.add('moving');
+  updateLED(state.floor,dir);
+  say(dir==='up'?'上升':'下降',dir==='up'?'Going up':'Going down');
+  placeCabin(floor);
+
+  const dist=Math.abs(floor-state.floor);
+  const duration=400+dist*120;
+  let f=state.floor;const step=dir==='up'?1:-1;
+  const iv=setInterval(()=>{f+=step;updateLED(f,dir);tone(300+f*50,.05)},duration/dist);
+
+  setTimeout(()=>{
+    clearInterval(iv);
+    state.floor=floor;state.moving=false;state.busy=false;
+    cabin.classList.remove('moving');
+    fbtns.forEach(b=>b.classList.remove('lit'));
+    updateLED(floor,'');
+    ding();
+    checkArrival();
+  },duration);
+}
+
+function checkArrival(){
+  const here=state.floor;
+  const hasPickup=state.tasks.some(t=>t.pickup===here);
+  const hasDrop=state.passengers.some(p=>p.dropFloor===here);
+  if(hasPickup||hasDrop){
+    say('到了，开门','Arrived, open door');
+  }
+}
+
+/* === 开关门 === */
+function onOpen(){
+  ensureAudio();
+  if(state.busy||state.moving)return;
+  if(state.doorOpen){say('门开着呢','Door is open');return}
+  state.busy=true;state.doorOpen=true;
+  $('#cabin').classList.add('open');
+  blip();say('开门','Open');
+  setTimeout(()=>{
+    state.busy=false;
+    handleDoorOpen();
+  },500);
+}
+
+function handleDoorOpen(){
+  const here=state.floor;
+  // 先下后上
+  const exiting=state.passengers.filter(p=>p.dropFloor===here);
+  if(exiting.length>0){
+    exiting.forEach(p=>{
+      state.passengers=state.passengers.filter(x=>x!==p);
+      state.deliveries++;state.stars++;state.combo++;
+      $('#star-count').textContent=state.stars;
+      addTime(3);
+    });
+    renderCabinPassengers();
+    if(state.combo>1)showCombo();
+    const pr=Math.floor(Math.random()*PRAISE_ZH.length);
+    showCelebrate(PRAISE_ZH[pr],PRAISE_EN[pr]);
+    chime();
+    if(state.deliveries>=state.targetDeliveries){setTimeout(levelUp,1800);return}
+  }
+
+  // 上客
+  setTimeout(()=>{
+    const here2=state.floor;
+    const boarding=state.tasks.filter(t=>t.pickup===here2);
+    boarding.forEach(t=>{
+      if(state.passengers.length>=MAX_CAPACITY){
+        showOverweight();
+        say('超重了，先送一些乘客下去','Overweight! Deliver some passengers first');
+        return;
+      }
+      state.passengers.push({animal:t.animal,dropFloor:t.drop});
+      state.tasks=state.tasks.filter(x=>x.id!==t.id);
+      const el=document.querySelector(`.waiting-animal[data-task-id="${t.id}"]`);
+      if(el){el.classList.remove('show');setTimeout(()=>el.remove(),400)}
+    });
+    renderCabinPassengers();
+    renderTaskBar();
+    if(state.passengers.length>0){
+      const next=state.passengers[0];
+      say(`送到${next.dropFloor}楼`,`Go to floor ${NUM_EN[next.dropFloor]}`);
+    }
+    if(state.tasks.length<2)setTimeout(spawnTask,800);
+  },exiting.length>0?1200:100);
+}
+
+function onClose(){
+  ensureAudio();
+  if(state.busy||state.moving)return;
+  if(!state.doorOpen){say('门关着','Door is closed');return}
+  state.doorOpen=false;
+  $('#cabin').classList.remove('open');
+  blip();say('关门','Close');
+}
+
+/* === 紧急按钮 === */
+function onEmergency(){
+  ensureAudio();
+  if(!state.moving)return;
+  const btn=$('#btn-emergency');
+  btn.classList.add('flash');
+  setTimeout(()=>btn.classList.remove('flash'),1200);
+  emergencySound();
+  say('紧急停止','Emergency stop');
+}
+
+/* === 超重 === */
+function showOverweight(){
+  const el=$('#overweight');
+  el.classList.add('show');
+  buzz();
+  setTimeout(()=>el.classList.remove('show'),2000);
+}
+
+/* === 轿厢乘客 === */
+function renderCabinPassengers(){
+  const el=$('#cabin-passengers');
+  el.innerHTML=state.passengers.map(p=>`<span>${p.animal}</span>`).join('');
+  const cnt=$('#cabin-count');
+  cnt.textContent=`${state.passengers.length}/${MAX_CAPACITY}`;
+  cnt.classList.toggle('show',state.passengers.length>0);
+}
+
+/* === 连击 === */
+function showCombo(){
+  const el=$('#combo-display');
+  el.textContent=`${state.combo}x 连击!`;
+  el.classList.remove('show');void el.offsetWidth;el.classList.add('show');
+  setTimeout(()=>el.classList.remove('show'),1000);
+}
+
+/* === 庆祝 === */
+function showCelebrate(zh,en){
+  $('#praise-zh').textContent=zh+'!';
+  $('#praise-en').textContent=en+'!';
+  $('#praise-combo').textContent=state.combo>1?`${state.combo}x Combo!`:'';
+  $('#celebrate').classList.add('show');
+  spawnConfetti();
+  setTimeout(()=>$('#celebrate').classList.remove('show'),1500);
+}
+
+function spawnConfetti(){
+  const colors=['#ff6b35','#ffd166','#06d6a0','#118ab2','#ef476f','#a06cd5'];
+  for(let i=0;i<30;i++){
+    const c=document.createElement('div');c.className='confetti-piece';
+    c.style.background=colors[i%colors.length];
+    c.style.left=Math.random()*100+'%';c.style.top='-10px';
+    const dx=(Math.random()-.5)*200;
+    c.animate([{transform:'translate(0,0) rotate(0)',opacity:1},{transform:`translate(${dx}px,100vh) rotate(${600+Math.random()*400}deg)`,opacity:0}],{duration:1200+Math.random()*600,easing:'ease-out'});
+    $('#game').appendChild(c);
+    setTimeout(()=>c.remove(),1900);
+  }
+}
+
+/* === 计时器 === */
+const CIRC=150.8;
+function startTimer(){
+  state.timerActive=true;
+  updateTimerDisplay();
+}
+function updateTimerDisplay(){
+  const pct=state.timeLeft/getMaxTime();
+  $('#timer-circle').style.strokeDashoffset=CIRC*(1-pct);
+  $('#timer-text').textContent=Math.ceil(state.timeLeft);
+  $('#timer-circle').classList.toggle('warning',state.timeLeft<=8);
+}
+function getMaxTime(){return 30+state.level*5}
+function addTime(s){
+  state.timeLeft=Math.min(state.timeLeft+s,getMaxTime());
+  const b=$('#bonus-text');b.textContent=`+${s}s`;b.classList.add('show');
+  setTimeout(()=>b.classList.remove('show'),1000);
+  updateTimerDisplay();
+}
+function tickTimer(){
+  if(!state.timerActive)return;
+  state.timeLeft=Math.max(0,state.timeLeft-.5);
+  updateTimerDisplay();
+  if(state.timeLeft<=0){
+    state.timerActive=false;
+    say('时间到了','Time is up');
+    setTimeout(()=>{resetLevel()},1500);
+  }
+}
+setInterval(tickTimer,500);
+
+/* === 关卡 === */
+function levelUp(){
+  state.timerActive=false;
+  state.level++;
+  state.deliveries=0;
+  state.targetDeliveries=3+state.level;
+  state.combo=0;
+  state.timeLeft=getMaxTime();
+  $('#level-display').textContent=`关卡 ${state.level}`;
+  $('#lvl-num').textContent=state.level;
+  $('#lvl-title').textContent=`关卡 ${state.level} · Level ${state.level}`;
+  $('#level-up').classList.add('show');
+  chime();
+  say(`关卡 ${state.level}`,`Level ${state.level}`);
+  setTimeout(()=>{
+    $('#level-up').classList.remove('show');
+    startLevel();
+  },2200);
+}
+
+function resetLevel(){
+  state.deliveries=0;
+  state.combo=0;
+  state.passengers=[];
+  state.tasks.forEach(t=>{const el=document.querySelector(`.waiting-animal[data-task-id="${t.id}"]`);if(el)el.remove()});
+  state.tasks=[];
+  state.timeLeft=getMaxTime();
+  renderCabinPassengers();
+  renderTaskBar();
+  say('再来一次','Try again');
+  setTimeout(startLevel,1000);
+}
+
+function startLevel(){
+  state.timeLeft=getMaxTime();
+  state.timerActive=true;
+  state.passengers=[];
+  state.tasks.forEach(t=>{const el=document.querySelector(`.waiting-animal[data-task-id="${t.id}"]`);if(el)el.remove()});
+  state.tasks=[];
+  renderCabinPassengers();
+  updateTimerDisplay();
+  spawnTask();
+  setTimeout(spawnTask,2000);
+  if(state.level>=3)setTimeout(spawnTask,4000);
+}
+
+/* === 提示 === */
+function repeatHint(){
+  if(state.passengers.length>0){
+    const p=state.passengers[0];
+    say(`送到${p.dropFloor}楼`,`Go to floor ${NUM_EN[p.dropFloor]}`);
+  }else if(state.tasks.length>0){
+    const t=state.tasks[0];
+    say(`去${t.pickup}楼接${t.animal}`,`Go to floor ${NUM_EN[t.pickup]}`);
+  }
+}
+
+/* === 启动 === */
+$('#start-btn').addEventListener('click',()=>{
+  $('#intro').classList.add('hide');
+  ensureAudio();
+  say('欢迎来到电梯大冒险','Welcome to Elevator Adventure');
+  placeCabin(1,false);
+  updateLED(1,'');
+  setTimeout(()=>{
+    startLevel();
+  },2000);
+});
+
+placeCabin(1,false);
+</script>
+</body>
+</html>
