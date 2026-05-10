@@ -14,81 +14,85 @@ body{display:flex;align-items:center;justify-content:center;touch-action:manipul
 #game{position:relative;width:100vw;height:100vh;max-width:520px;background:linear-gradient(180deg,#ffecd2 0%,#fcb69f 50%,#ffecd2 100%);overflow:hidden}
 
 /* === 积分 左上 === */
-#score-box{position:absolute;top:env(safe-area-inset-top,14px);left:14px;z-index:60;background:rgba(255,255,255,.92);border-radius:20px;padding:8px 18px;box-shadow:0 4px 16px rgba(0,0,0,.1);display:flex;align-items:center;gap:8px;font-size:20px;font-weight:800;color:#e91e63}
-#score-box .star{font-size:24px}
+#score-box{position:absolute;top:env(safe-area-inset-top,14px);left:14px;z-index:60;background:rgba(255,255,255,.92);border-radius:20px;padding:6px 14px;box-shadow:0 4px 16px rgba(0,0,0,.1);display:flex;align-items:center;gap:6px;font-size:18px;font-weight:800;color:#e91e63}
+#score-box .star{font-size:20px}
 
-/* === 任务气泡 === */
-#task-bubble{position:absolute;top:env(safe-area-inset-top,14px);left:50%;transform:translateX(-50%);z-index:55;background:#fff;border-radius:22px;padding:10px 22px;box-shadow:0 6px 24px rgba(0,0,0,.12);display:flex;align-items:center;gap:12px;min-width:200px;justify-content:center;opacity:0;transition:opacity .4s,transform .4s}
-#task-bubble.show{opacity:1;transform:translateX(-50%) scale(1)}
-#task-bubble.pop{animation:bubblePop .5s ease-out}
-@keyframes bubblePop{0%{transform:translateX(-50%) scale(.6)}60%{transform:translateX(-50%) scale(1.08)}100%{transform:translateX(-50%) scale(1)}}
-.bubble-char{font-size:36px}
-.bubble-arrow{font-size:20px;color:#aaa}
-.bubble-target{background:linear-gradient(135deg,#ff6b9d,#c850c0);border-radius:14px;padding:6px 14px;color:#fff;font-weight:900;font-size:28px;line-height:1;display:flex;flex-direction:column;align-items:center}
-.bubble-target small{font-size:10px;margin-top:2px;opacity:.9;letter-spacing:1px}
+/* === 任务栏（队列） === */
+#task-bar{position:absolute;top:env(safe-area-inset-top,14px);left:50%;transform:translateX(-50%);z-index:55;display:flex;gap:6px;align-items:center;max-width:72%;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+#task-bar::-webkit-scrollbar{display:none}
+.task-card{background:#fff;border-radius:14px;padding:5px 10px;box-shadow:0 3px 12px rgba(0,0,0,.1);display:flex;align-items:center;gap:5px;min-width:max-content;transition:all .3s;border:2px solid transparent}
+.task-card.active{border-color:#c850c0;background:linear-gradient(135deg,#fff0f6,#fff);box-shadow:0 3px 16px rgba(200,80,192,.25)}
+.task-card.done{opacity:.4;transform:scale(.85)}
+.tc-char{font-size:22px}
+.tc-info{display:flex;flex-direction:column;align-items:center;line-height:1.1}
+.tc-from,.tc-to{font-size:11px;font-weight:800;color:#333}
+.tc-arrow{font-size:8px;color:#aaa}
+.tc-to{color:#c850c0}
 
 /* === 建筑 === */
-#building{position:absolute;top:80px;bottom:200px;left:20px;right:20px;display:flex;border-radius:16px;overflow:visible}
+#building{position:absolute;top:55px;bottom:180px;left:12px;right:12px;display:flex;border-radius:16px;overflow:visible}
 
 /* 楼层 */
 #floors-side{flex:1;display:flex;flex-direction:column-reverse;position:relative}
-.floor-row{flex:1;border-bottom:2px solid rgba(139,69,19,.15);display:flex;align-items:center;padding:0 10px;position:relative}
-.floor-row:last-child{border-bottom:3px solid rgba(139,69,19,.4)}
-.fl-num{font-size:14px;font-weight:800;color:#8b4513;opacity:.6;width:22px}
-.fl-waiting{flex:1;display:flex;align-items:center;justify-content:flex-end;gap:4px;padding-right:8px}
-.waiting-char{font-size:clamp(28px,6vw,40px);opacity:0;transform:scale(.5);transition:all .4s ease-out}
+.floor-row{flex:1;border-bottom:1.5px solid rgba(139,69,19,.12);display:flex;align-items:center;padding:0 6px;position:relative}
+.floor-row:last-child{border-bottom:2px solid rgba(139,69,19,.3)}
+.fl-num{font-size:11px;font-weight:800;color:#8b4513;opacity:.6;width:20px;text-align:center}
+.fl-waiting{flex:1;display:flex;align-items:center;justify-content:flex-end;gap:2px;padding-right:4px;flex-wrap:nowrap;overflow:hidden}
+.waiting-char{font-size:clamp(18px,4vw,26px);opacity:0;transform:scale(.5);transition:all .4s ease-out;position:relative}
 .waiting-char.show{opacity:1;transform:scale(1);animation:charBounce 2s ease-in-out infinite}
-@keyframes charBounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
+@keyframes charBounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-3px)}}
+.waiting-dest{position:absolute;bottom:-2px;right:-4px;font-size:8px;background:#c850c0;color:#fff;border-radius:6px;padding:0 3px;font-weight:800;line-height:1.4}
 
 /* 电梯井道 === */
-#shaft{width:clamp(90px,22vw,120px);background:linear-gradient(180deg,#4a2c2a,#2d1b18);border-radius:12px;position:relative;border:3px solid #8b4513;overflow:hidden;box-shadow:inset 0 0 20px rgba(0,0,0,.5)}
+#shaft{width:clamp(70px,18vw,100px);background:linear-gradient(180deg,#4a2c2a,#2d1b18);border-radius:10px;position:relative;border:3px solid #8b4513;overflow:hidden;box-shadow:inset 0 0 20px rgba(0,0,0,.5)}
 
 /* LED */
-#led-display{position:absolute;top:8px;left:50%;transform:translateX(-50%);background:#111;border:2px solid #444;border-radius:6px;padding:3px 10px;z-index:5;display:flex;align-items:center;gap:4px}
-#led-floor{font-family:"Courier New",monospace;font-size:22px;font-weight:900;color:#0f0;text-shadow:0 0 10px #0f0}
-#led-dir{font-size:12px;color:#0f0;text-shadow:0 0 6px #0f0}
+#led-display{position:absolute;top:4px;left:50%;transform:translateX(-50%);background:#111;border:2px solid #444;border-radius:5px;padding:2px 8px;z-index:5;display:flex;align-items:center;gap:3px}
+#led-floor{font-family:"Courier New",monospace;font-size:18px;font-weight:900;color:#0f0;text-shadow:0 0 10px #0f0}
+#led-dir{font-size:10px;color:#0f0;text-shadow:0 0 6px #0f0}
 
 /* 轿厢 */
-#cabin{position:absolute;left:6px;right:6px;height:calc((100% - 40px) / 5);bottom:4px;background:linear-gradient(180deg,#fff8e1,#ffe0b2);border:3px solid #ff8f00;border-radius:10px;box-shadow:0 4px 16px rgba(0,0,0,.3),inset 0 -2px 8px rgba(0,0,0,.1);transition:bottom .9s cubic-bezier(.4,0,.2,1);display:flex;align-items:center;justify-content:center;overflow:hidden}
-#cabin::before{content:'';position:absolute;top:0;left:0;right:0;height:6px;background:linear-gradient(90deg,#ff8f00,#ffc107,#ff8f00);border-radius:7px 7px 0 0}
+#cabin{position:absolute;left:5px;right:5px;height:calc((100% - 30px) / 10);bottom:3px;background:linear-gradient(180deg,#fff8e1,#ffe0b2);border:2.5px solid #ff8f00;border-radius:8px;box-shadow:0 3px 12px rgba(0,0,0,.3),inset 0 -2px 6px rgba(0,0,0,.1);transition:bottom .9s cubic-bezier(.4,0,.2,1);display:flex;align-items:center;justify-content:center;overflow:hidden}
+#cabin::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;background:linear-gradient(90deg,#ff8f00,#ffc107,#ff8f00);border-radius:6px 6px 0 0}
 
 /* 门 */
-.door{position:absolute;top:8px;bottom:4px;width:calc(50% - 6px);background:linear-gradient(180deg,#795548,#5d4037);border-radius:4px;transition:transform .6s cubic-bezier(.25,.8,.25,1);z-index:2}
-.door.L{left:4px}
-.door.R{right:4px}
+.door{position:absolute;top:6px;bottom:3px;width:calc(50% - 5px);background:linear-gradient(180deg,#795548,#5d4037);border-radius:3px;transition:transform .6s cubic-bezier(.25,.8,.25,1);z-index:2}
+.door.L{left:3px}
+.door.R{right:3px}
 #cabin.open .door.L{transform:translateX(-95%)}
 #cabin.open .door.R{transform:translateX(95%)}
 
 /* 门上的小窗 */
-.door::after{content:'';position:absolute;top:20%;left:25%;width:50%;height:25%;background:rgba(255,255,255,.15);border-radius:4px}
+.door::after{content:'';position:absolute;top:18%;left:22%;width:56%;height:22%;background:rgba(255,255,255,.15);border-radius:3px}
 
 /* 轿厢内乘客 */
-#cabin-inside{z-index:1;font-size:clamp(24px,5vw,34px);display:flex;gap:2px}
+#cabin-inside{z-index:1;font-size:clamp(14px,3vw,20px);display:flex;gap:1px;flex-wrap:wrap;justify-content:center;max-width:90%}
 
 /* 轿厢指示灯 */
-#cabin-light{position:absolute;top:12px;left:50%;transform:translateX(-50%);width:8px;height:8px;border-radius:50%;background:#4caf50;box-shadow:0 0 6px #4caf50;z-index:3;transition:background .3s,box-shadow .3s}
-#cabin-light.moving{background:#ff9800;box-shadow:0 0 8px #ff9800;animation:blink 1s infinite}
+#cabin-light{position:absolute;top:8px;left:50%;transform:translateX(-50%);width:6px;height:6px;border-radius:50%;background:#4caf50;box-shadow:0 0 4px #4caf50;z-index:3;transition:background .3s,box-shadow .3s}
+#cabin-light.moving{background:#ff9800;box-shadow:0 0 6px #ff9800;animation:blink 1s infinite}
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.4}}
 
 /* === 控制面板 === */
-#panel{position:absolute;bottom:env(safe-area-inset-bottom,10px);left:10px;right:10px;z-index:40;padding-bottom:6px}
-#panel-bg{background:rgba(255,255,255,.95);border-radius:24px;padding:16px;box-shadow:0 -4px 24px rgba(0,0,0,.1)}
+#panel{position:absolute;bottom:env(safe-area-inset-bottom,6px);left:8px;right:8px;z-index:40;padding-bottom:4px}
+#panel-bg{background:rgba(255,255,255,.95);border-radius:20px;padding:10px 12px;box-shadow:0 -4px 24px rgba(0,0,0,.1)}
 
-#floor-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-bottom:12px}
-.fbtn{aspect-ratio:1;border-radius:50%;border:3px solid #e0e0e0;background:#fff;font-size:clamp(18px,5vw,26px);font-weight:900;color:#333;cursor:pointer;transition:all .15s;display:flex;flex-direction:column;align-items:center;justify-content:center;box-shadow:0 3px 8px rgba(0,0,0,.08)}
+#floor-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:5px;margin-bottom:8px}
+.fbtn{aspect-ratio:1;border-radius:50%;border:2.5px solid #e0e0e0;background:#fff;font-size:clamp(14px,3.8vw,20px);font-weight:900;color:#333;cursor:pointer;transition:all .15s;display:flex;flex-direction:column;align-items:center;justify-content:center;box-shadow:0 2px 6px rgba(0,0,0,.08)}
 .fbtn:active{transform:scale(.9)}
-.fbtn.lit{background:linear-gradient(135deg,#ff6b9d,#c850c0);color:#fff;border-color:#c850c0;box-shadow:0 0 20px rgba(200,80,192,.4)}
+.fbtn.lit{background:linear-gradient(135deg,#ff6b9d,#c850c0);color:#fff;border-color:#c850c0;box-shadow:0 0 16px rgba(200,80,192,.4)}
 .fbtn.wrong{animation:shake .35s;border-color:#f44336;background:#fee}
-@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
-.fbtn small{font-size:8px;color:#999;font-weight:600;margin-top:1px}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-4px)}75%{transform:translateX(4px)}}
+.fbtn small{font-size:7px;color:#999;font-weight:600;margin-top:0}
 .fbtn.lit small{color:rgba(255,255,255,.8)}
+.fbtn.has-passenger{border-color:#ff6b9d;box-shadow:0 0 8px rgba(255,107,157,.3)}
 
-#door-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-.dbtn{padding:14px;border:none;border-radius:16px;font-size:18px;font-weight:800;color:#fff;cursor:pointer;transition:transform .1s;display:flex;flex-direction:column;align-items:center;gap:2px}
+#door-row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.dbtn{padding:10px;border:none;border-radius:14px;font-size:16px;font-weight:800;color:#fff;cursor:pointer;transition:transform .1s;display:flex;flex-direction:column;align-items:center;gap:1px}
 .dbtn:active{transform:scale(.94)}
 .dbtn.open{background:linear-gradient(135deg,#4caf50,#2e7d32)}
 .dbtn.close{background:linear-gradient(135deg,#f44336,#c62828)}
-.dbtn small{font-size:11px;opacity:.85}
+.dbtn small{font-size:10px;opacity:.85}
 
 /* === 开始页 === */
 #intro{position:absolute;inset:0;z-index:500;background:linear-gradient(135deg,#667eea,#764ba2,#f093fb);display:flex;flex-direction:column;align-items:center;justify-content:center;color:#fff;text-align:center;padding:24px;transition:opacity .6s}
@@ -114,7 +118,7 @@ body{display:flex;align-items:center;justify-content:center;touch-action:manipul
 .confetti{position:absolute;pointer-events:none;z-index:601;border-radius:3px}
 
 /* === 音效按钮 === */
-#sound-toggle{position:absolute;top:env(safe-area-inset-top,14px);right:14px;z-index:60;background:rgba(255,255,255,.9);border:none;border-radius:50%;width:40px;height:40px;font-size:20px;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.1)}
+#sound-toggle{position:absolute;top:env(safe-area-inset-top,14px);right:14px;z-index:60;background:rgba(255,255,255,.9);border:none;border-radius:50%;width:36px;height:36px;font-size:18px;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.1)}
 </style>
 </head>
 <body>
@@ -124,7 +128,7 @@ body{display:flex;align-items:center;justify-content:center;touch-action:manipul
 <div id="intro">
   <div class="chars">👸🤴🛗</div>
   <h1>皇家电梯</h1>
-  <h2>Royal Elevator</h2>
+  <h2>Royal Elevator · 10层</h2>
   <button id="go-btn">开始 · Start</button>
 </div>
 
@@ -132,12 +136,8 @@ body{display:flex;align-items:center;justify-content:center;touch-action:manipul
 <div id="score-box"><span class="star">⭐</span><span id="score-num">0</span></div>
 <button id="sound-toggle">🔊</button>
 
-<!-- 任务气泡 -->
-<div id="task-bubble">
-  <span class="bubble-char" id="b-char">👸</span>
-  <span class="bubble-arrow">➜</span>
-  <span class="bubble-target"><span id="b-floor">3</span><small id="b-en">THREE</small></span>
-</div>
+<!-- 任务栏 -->
+<div id="task-bar"></div>
 
 <!-- 建筑 -->
 <div id="building">
@@ -176,10 +176,11 @@ body{display:flex;align-items:center;justify-content:center;touch-action:manipul
 <script>
 'use strict';
 
-const FLOORS = 5;
-const NUM_EN = ['','ONE','TWO','THREE','FOUR','FIVE'];
-const CHARS = ['👸','🤴','👸','🤴','👸','🤴'];
-const WIN_SCORE = 5;
+const FLOORS = 10;
+const NUM_EN = ['','ONE','TWO','THREE','FOUR','FIVE','SIX','SEVEN','EIGHT','NINE','TEN'];
+const CHARS = ['👸','🤴','👸','🤴','👸','🤴','👸','🤴'];
+const WIN_SCORE = 8;
+const MAX_QUEUE = 3;     // 同时最多排队乘客数
 
 const PRAISE = [
   ['太棒了!','Great job!'],
@@ -196,9 +197,11 @@ const st = {
   floor: 1,
   doorOpen: false,
   busy: false,
-  phase: 'pickup', // pickup | dropoff
-  task: null,       // {char, pickup, drop}
+  // 多乘客队列
+  tasks: [],        // [{id, char, pickup, drop, pickedUp, done}]
+  passengers: [],   // 轿厢内乘客 [{id, char, drop}]
   score: 0,
+  taskId: 0,
 };
 
 /* === 音频 === */
@@ -224,6 +227,7 @@ function victoryFanfare(){
   let t=0;
   notes.forEach((n,i)=>{setTimeout(()=>playTone(n,durs[i],'sine',.13),t*1000);t+=durs[i]+.05});
 }
+function pickupChime(){playTone(659,.1);setTimeout(()=>playTone(784,.1),100);setTimeout(()=>playTone(1047,.15),200)}
 
 /* === 语音 === */
 const synth=window.speechSynthesis;
@@ -246,16 +250,26 @@ for(let f=1;f<=FLOORS;f++){
   floorsSide.appendChild(row);
 }
 
-/* === 楼层按钮 === */
+/* === 楼层按钮 (2行 × 5列: 上排 6-10, 下排 1-5) === */
 const grid=$('#floor-grid');
 const fbtns=[];
-for(let f=1;f<=FLOORS;f++){
+// 上排 6-10
+for(let f=6;f<=10;f++){
   const b=document.createElement('button');
   b.className='fbtn';b.dataset.floor=f;
   b.innerHTML=`${f}<small>${NUM_EN[f]}</small>`;
   b.addEventListener('click',()=>onFloorBtn(f,b));
   grid.appendChild(b);
-  fbtns.push(b);
+  fbtns[f]=b;
+}
+// 下排 1-5
+for(let f=1;f<=5;f++){
+  const b=document.createElement('button');
+  b.className='fbtn';b.dataset.floor=f;
+  b.innerHTML=`${f}<small>${NUM_EN[f]}</small>`;
+  b.addEventListener('click',()=>onFloorBtn(f,b));
+  grid.appendChild(b);
+  fbtns[f]=b;
 }
 
 $('#btn-open').addEventListener('click',onOpen);
@@ -265,9 +279,9 @@ $('#sound-toggle').addEventListener('click',()=>{ensureAC();repeatHint()});
 /* === 轿厢定位 === */
 function placeCabin(floor,anim=true){
   const cabin=$('#cabin');
-  const shaftH=$('#shaft').clientHeight-40;
+  const shaftH=$('#shaft').clientHeight-30;
   const floorH=shaftH/FLOORS;
-  const bottom=4+(floor-1)*floorH;
+  const bottom=3+(floor-1)*floorH;
   if(!anim){cabin.style.transition='none';cabin.style.bottom=bottom+'px';void cabin.offsetHeight;cabin.style.transition=''}
   else{cabin.style.bottom=bottom+'px'}
 }
@@ -277,50 +291,132 @@ function updateLED(floor,dir){
   $('#led-dir').textContent=dir==='up'?'▲':dir==='down'?'▼':'■';
 }
 
-/* === 出题 === */
-function newRound(){
-  st.busy=false;
-  st.phase='pickup';
-  st.doorOpen=false;
-  $('#cabin').classList.remove('open');
-  $('#cabin-inside').textContent='';
-  fbtns.forEach(b=>b.classList.remove('lit','wrong'));
+/* === 任务栏渲染 === */
+function renderTaskBar(){
+  const bar=$('#task-bar');
+  bar.innerHTML='';
+  // 找当前活跃任务(未完成且未被接的第一个，或已被接在轿厢里的)
+  const activeTask = getActiveTask();
+  st.tasks.forEach(t=>{
+    if(t.done) return;
+    const card=document.createElement('div');
+    card.className='task-card';
+    if(activeTask && t.id===activeTask.id) card.classList.add('active');
 
-  // 清旧
+    const fromFloor = t.pickedUp ? '🛗' : t.pickup;
+    const toFloor = t.drop;
+
+    card.innerHTML=`<span class="tc-char">${t.char}</span><span class="tc-info"><span class="tc-from">${fromFloor}F</span><span class="tc-arrow">▼</span><span class="tc-to">${toFloor}F</span></span>`;
+    bar.appendChild(card);
+  });
+
+  // 高亮有乘客等待的楼层按钮
+  for(let f=1;f<=FLOORS;f++){
+    if(fbtns[f]) fbtns[f].classList.remove('has-passenger');
+  }
+  st.tasks.forEach(t=>{
+    if(!t.pickedUp && !t.done && fbtns[t.pickup]){
+      fbtns[t.pickup].classList.add('has-passenger');
+    }
+  });
+}
+
+function getActiveTask(){
+  // 优先: 轿厢内需要送达的乘客（按目标楼层排序，找当前楼层最近的）
+  // 如果没有需要送达的，就找还没接的
+  if(st.passengers.length>0){
+    // 找轿厢内乘客对应的task
+    return st.tasks.find(t=>!t.done && t.pickedUp);
+  }
+  return st.tasks.find(t=>!t.done && !t.pickedUp);
+}
+
+/* === 显示等待角色 === */
+function renderWaiting(){
+  // 清除所有等待角色
   document.querySelectorAll('.waiting-char').forEach(el=>el.remove());
 
-  let pickup,drop;
+  st.tasks.forEach(t=>{
+    if(t.pickedUp || t.done) return;
+    const container=$(`#fw-${t.pickup}`);
+    if(!container) return;
+    const el=document.createElement('span');
+    el.className='waiting-char';
+    el.dataset.taskId=t.id;
+    el.innerHTML=`${t.char}<span class="waiting-dest">${t.drop}</span>`;
+    container.appendChild(el);
+    setTimeout(()=>el.classList.add('show'),60);
+  });
+}
+
+/* === 生成新任务 === */
+function spawnTask(){
+  const pendingCount = st.tasks.filter(t=>!t.done).length;
+  if(pendingCount >= MAX_QUEUE) return null;
+
+  let pickup, drop;
+  const usedPickups = st.tasks.filter(t=>!t.done && !t.pickedUp).map(t=>t.pickup);
+  let attempts = 0;
   do{
-    pickup=1+Math.floor(Math.random()*FLOORS);
-    drop=1+Math.floor(Math.random()*FLOORS);
-  }while(pickup===drop||pickup===st.floor);
+    pickup = 1 + Math.floor(Math.random()*FLOORS);
+    drop = 1 + Math.floor(Math.random()*FLOORS);
+    attempts++;
+  }while((pickup===drop || usedPickups.includes(pickup)) && attempts < 50);
 
-  const char=CHARS[Math.floor(Math.random()*CHARS.length)];
-  st.task={char,pickup,drop};
+  if(pickup===drop) drop = pickup===FLOORS ? pickup-1 : pickup+1;
 
-  // 放角色到楼层
-  const container=$(`#fw-${pickup}`);
-  const el=document.createElement('span');
-  el.className='waiting-char';el.id='active-char';el.textContent=char;
-  container.appendChild(el);
-  setTimeout(()=>el.classList.add('show'),60);
+  const char = CHARS[Math.floor(Math.random()*CHARS.length)];
+  const task = {id: ++st.taskId, char, pickup, drop, pickedUp: false, done: false};
+  st.tasks.push(task);
 
-  // 更新气泡
-  $('#b-char').textContent=char;
-  $('#b-floor').textContent=pickup;
-  $('#b-en').textContent=NUM_EN[pickup];
-  const bubble=$('#task-bubble');
-  bubble.classList.add('show');
-  bubble.classList.remove('pop');
-  void bubble.offsetWidth;
-  bubble.classList.add('pop');
+  renderWaiting();
+  renderTaskBar();
 
-  // 语音
+  return task;
+}
+
+/* === 初始出题 === */
+function startGame(){
+  st.tasks = [];
+  st.passengers = [];
+  st.taskId = 0;
+  st.busy = false;
+  st.doorOpen = false;
+  $('#cabin').classList.remove('open');
+  $('#cabin-inside').textContent='';
+  fbtns.forEach((b,i)=>{if(b)b.classList.remove('lit','wrong','has-passenger')});
+  document.querySelectorAll('.waiting-char').forEach(el=>el.remove());
+
+  // 生成2个初始任务
+  const t1 = spawnTask();
   setTimeout(()=>{
-    const who=char==='👸'?'公主':'王子';
-    const whoEn=char==='👸'?'princess':'prince';
-    say(`${who}在${pickup}楼，去接${who === '公主' ? '她' : '他'}`,`The ${whoEn} is on floor ${NUM_EN[pickup]}, pick ${whoEn==='princess'?'her':'him'} up`);
-  },400);
+    spawnTask();
+    renderTaskBar();
+    // 语音提示
+    if(t1){
+      const who = t1.char==='👸'?'公主':'王子';
+      const whoEn = t1.char==='👸'?'princess':'prince';
+      say(`${who}在${t1.pickup}楼等电梯`,`The ${whoEn} is on floor ${NUM_EN[t1.pickup]}`);
+    }
+  },800);
+}
+
+/* === 定时添加新乘客 === */
+let spawnTimer = null;
+function startSpawnTimer(){
+  if(spawnTimer) clearInterval(spawnTimer);
+  spawnTimer = setInterval(()=>{
+    if(st.busy) return;
+    const pending = st.tasks.filter(t=>!t.done).length;
+    if(pending < MAX_QUEUE){
+      const t = spawnTask();
+      if(t){
+        pickupChime();
+        const who = t.char==='👸'?'公主':'王子';
+        say(`${who}在${t.pickup}楼等电梯`,`New passenger on floor ${NUM_EN[t.pickup]}`);
+      }
+    }
+  },8000); // 每8秒检查是否需要添加新乘客
 }
 
 /* === 楼层按钮点击 === */
@@ -337,16 +433,23 @@ function onFloorBtn(floor,btn){
     say('先关门哦','Close the door first');return;
   }
 
-  const target=st.phase==='pickup'?st.task.pickup:st.task.drop;
+  // 检查这个楼层是否有意义（有乘客等或有人要下）
+  const hasWaiting = st.tasks.some(t=>!t.done && !t.pickedUp && t.pickup===floor);
+  const hasDropoff = st.passengers.some(p=>p.drop===floor);
 
-  if(floor!==target){
-    btn.classList.add('wrong');buzz();
-    setTimeout(()=>btn.classList.remove('wrong'),350);
-    setTimeout(()=>say('再试一次','Try again'),300);
-    return;
+  if(!hasWaiting && !hasDropoff && st.passengers.length===0){
+    // 没人等也没人要下，提示去接人
+    const nextTask = st.tasks.find(t=>!t.done && !t.pickedUp);
+    if(nextTask && floor !== nextTask.pickup){
+      btn.classList.add('wrong');buzz();
+      setTimeout(()=>btn.classList.remove('wrong'),350);
+      const who = nextTask.char==='👸'?'公主':'王子';
+      say(`去${nextTask.pickup}楼接${who}`,`Go to floor ${NUM_EN[nextTask.pickup]}`);
+      return;
+    }
   }
 
-  fbtns.forEach(b=>b.classList.remove('lit'));
+  fbtns.forEach((b,i)=>{if(b)b.classList.remove('lit')});
   btn.classList.add('lit');
   moveTo(floor);
 }
@@ -364,15 +467,15 @@ function moveTo(floor){
   placeCabin(floor);
 
   const dist=Math.abs(floor-st.floor);
-  const duration=500+dist*180;
+  const duration=500+dist*150;
   let f=st.floor;const step=dir==='up'?1:-1;
-  const iv=setInterval(()=>{f+=step;updateLED(f,dir);playTone(350+f*60,.05)},duration/dist);
+  const iv=setInterval(()=>{f+=step;updateLED(f,dir);playTone(350+f*50,.05)},duration/dist);
 
   setTimeout(()=>{
     clearInterval(iv);
     st.floor=floor;st.busy=false;
     light.classList.remove('moving');
-    fbtns.forEach(b=>b.classList.remove('lit'));
+    fbtns.forEach((b,i)=>{if(b)b.classList.remove('lit')});
     updateLED(floor,'');
     ding();
     afterArrive();
@@ -380,7 +483,23 @@ function moveTo(floor){
 }
 
 function afterArrive(){
-  setTimeout(()=>say('到了，按开门','Arrived! Press OPEN'),250);
+  // 检查当前楼层是否有人等或有人要下
+  const hasWaiting = st.tasks.some(t=>!t.done && !t.pickedUp && t.pickup===st.floor);
+  const hasDropoff = st.passengers.some(p=>p.drop===st.floor);
+
+  if(hasWaiting || hasDropoff){
+    setTimeout(()=>say('到了，按开门','Arrived! Press OPEN'),250);
+  } else {
+    // 引导去有任务的楼层
+    const nextPickup = st.tasks.find(t=>!t.done && !t.pickedUp);
+    const nextDrop = st.passengers.length>0 ? st.passengers[0] : null;
+    if(nextDrop){
+      setTimeout(()=>say(`送到${nextDrop.drop}楼`,`Go to floor ${NUM_EN[nextDrop.drop]}`),250);
+    } else if(nextPickup){
+      const who = nextPickup.char==='👸'?'公主':'王子';
+      setTimeout(()=>say(`去${nextPickup.pickup}楼接${who}`,`Go to floor ${NUM_EN[nextPickup.pickup]}`),250);
+    }
+  }
 }
 
 /* === 开门 === */
@@ -389,55 +508,103 @@ function onOpen(){
   if(st.busy)return;
   if(st.doorOpen){say('门已经开着啦','Door is already open');return}
 
-  const target=st.phase==='pickup'?st.task.pickup:st.task.drop;
-  if(st.floor!==target){
-    buzz();
-    say(`要先去${target}楼哦`,`Go to floor ${NUM_EN[target]} first`);
-    return;
-  }
-
   st.busy=true;st.doorOpen=true;
   $('#cabin').classList.add('open');
   boop();say('开门','Open');
 
-  if(st.phase==='pickup'){
-    setTimeout(()=>{
-      const el=$('#active-char');
-      if(el){el.style.transition='all .4s';el.style.opacity='0';el.style.transform='scale(.3)';setTimeout(()=>el.remove(),400)}
-      $('#cabin-inside').textContent=st.task.char;
-      st.phase='dropoff';
-      // 更新气泡
-      $('#b-floor').textContent=st.task.drop;
-      $('#b-en').textContent=NUM_EN[st.task.drop];
-      const bubble=$('#task-bubble');bubble.classList.remove('pop');void bubble.offsetWidth;bubble.classList.add('pop');
-      st.busy=false;
-      cuteMelody();
-      const who=st.task.char==='👸'?'公主':'王子';
-      const whoEn=st.task.char==='👸'?'princess':'prince';
-      setTimeout(()=>say(`送${who}去${st.task.drop}楼`,`Take the ${whoEn} to floor ${NUM_EN[st.task.drop]}`),500);
-    },650);
-  } else {
-    // 送达!
-    setTimeout(()=>{
-      $('#cabin-inside').style.transition='opacity .3s';
-      $('#cabin-inside').style.opacity='0';
-      setTimeout(()=>{
-        $('#cabin-inside').textContent='';
-        $('#cabin-inside').style.opacity='1';
-        $('#cabin-inside').style.transition='';
+  // 处理当前楼层的所有事件
+  setTimeout(()=>{
+    let anyAction = false;
+
+    // 1. 先让到站的乘客下车
+    const exiting = st.passengers.filter(p=>p.drop===st.floor);
+    if(exiting.length>0){
+      anyAction = true;
+      exiting.forEach(p=>{
+        // 从轿厢移除
+        st.passengers = st.passengers.filter(pp=>pp.id!==p.id);
+        // 标记任务完成
+        const task = st.tasks.find(t=>t.id===p.id);
+        if(task) task.done = true;
         st.score++;
-        $('#score-num').textContent=st.score;
+      });
+      $('#score-num').textContent = st.score;
+      updateCabinDisplay();
+
+      if(st.score >= WIN_SCORE){
+        st.busy=false;
+        renderTaskBar();
+        showVictory();
+        return;
+      }
+
+      showPraise();
+    }
+
+    // 2. 再让等待的乘客上车
+    const boarding = st.tasks.filter(t=>!t.done && !t.pickedUp && t.pickup===st.floor);
+    if(boarding.length>0){
+      anyAction = true;
+      setTimeout(()=>{
+        boarding.forEach(t=>{
+          t.pickedUp = true;
+          st.passengers.push({id:t.id, char:t.char, drop:t.drop});
+          // 移除等待角色动画
+          const el = document.querySelector(`.waiting-char[data-task-id="${t.id}"]`);
+          if(el){el.style.transition='all .4s';el.style.opacity='0';el.style.transform='scale(.3)';setTimeout(()=>el.remove(),400)}
+        });
+
+        updateCabinDisplay();
+        cuteMelody();
+        renderTaskBar();
+
+        // 语音提示送到哪里
+        if(st.passengers.length>0){
+          const p = st.passengers[0];
+          const who = p.char==='👸'?'公主':'王子';
+          const whoEn = p.char==='👸'?'princess':'prince';
+          say(`送${who}去${p.drop}楼`,`Take the ${whoEn} to floor ${NUM_EN[p.drop]}`);
+        }
+
         st.busy=false;
 
-        if(st.score>=WIN_SCORE){
-          showVictory();
-        }else{
-          showPraise();
-          setTimeout(newRound,2000);
-        }
-      },300);
-    },600);
-  }
+        // 尝试生成新任务
+        setTimeout(()=>{
+          if(st.tasks.filter(t=>!t.done).length < MAX_QUEUE){
+            const nt = spawnTask();
+            if(nt){
+              pickupChime();
+              const nw = nt.char==='👸'?'公主':'王子';
+              say(`${nw}在${nt.pickup}楼等电梯`,`New passenger on floor ${NUM_EN[nt.pickup]}`);
+            }
+          }
+        },2000);
+      }, exiting.length>0 ? 800 : 0);
+    } else {
+      st.busy=false;
+    }
+
+    if(!anyAction){
+      st.busy=false;
+      // 没有任何事情发生，提示一下
+      const nextPickup = st.tasks.find(t=>!t.done && !t.pickedUp);
+      const nextDrop = st.passengers.length>0 ? st.passengers[0] : null;
+      if(nextDrop){
+        say(`这里没人下车，去${nextDrop.drop}楼`,`No one gets off here, go to floor ${NUM_EN[nextDrop.drop]}`);
+      } else if(nextPickup){
+        const who = nextPickup.char==='👸'?'公主':'王子';
+        say(`这里没人，去${nextPickup.pickup}楼接${who}`,`No one here, go to floor ${NUM_EN[nextPickup.pickup]}`);
+      }
+    }
+
+    renderTaskBar();
+  },650);
+}
+
+/* === 更新轿厢内显示 === */
+function updateCabinDisplay(){
+  const inside = $('#cabin-inside');
+  inside.innerHTML = st.passengers.map(p=>p.char).join('');
 }
 
 /* === 关门 === */
@@ -476,6 +643,7 @@ function miniConfetti(){
 
 /* === 胜利页 === */
 function showVictory(){
+  if(spawnTimer) clearInterval(spawnTimer);
   victoryFanfare();
   say('恭喜你，全部送达！你是最棒的小司机！','Congratulations! You are the best elevator driver!');
 
@@ -522,17 +690,20 @@ $('#v-again').addEventListener('click',()=>{
   $('#score-num').textContent='0';
   ensureAC();
   say('再来一次','Let\'s go again');
-  setTimeout(newRound,800);
+  setTimeout(()=>{startGame();startSpawnTimer()},800);
 });
 
 /* === 提示 === */
 function repeatHint(){
-  if(!st.task)return;
-  if(st.phase==='pickup'){
-    const who=st.task.char==='👸'?'公主':'王子';
-    say(`去${st.task.pickup}楼接${who}`,`Go to floor ${NUM_EN[st.task.pickup]}`);
-  }else{
-    say(`送到${st.task.drop}楼`,`Go to floor ${NUM_EN[st.task.drop]}`);
+  if(st.passengers.length>0){
+    const p = st.passengers[0];
+    say(`送到${p.drop}楼`,`Go to floor ${NUM_EN[p.drop]}`);
+  } else {
+    const nextTask = st.tasks.find(t=>!t.done && !t.pickedUp);
+    if(nextTask){
+      const who = nextTask.char==='👸'?'公主':'王子';
+      say(`去${nextTask.pickup}楼接${who}`,`Go to floor ${NUM_EN[nextTask.pickup]}`);
+    }
   }
 }
 
@@ -540,11 +711,11 @@ function repeatHint(){
 $('#go-btn').addEventListener('click',()=>{
   $('#intro').classList.add('hide');
   ensureAC();
-  say('欢迎来到皇家电梯','Welcome to Royal Elevator');
+  say('欢迎来到皇家电梯，十层大冒险','Welcome to Royal Elevator, ten floors adventure');
   cuteMelody();
   placeCabin(1,false);
   updateLED(1,'');
-  setTimeout(newRound,2200);
+  setTimeout(()=>{startGame();startSpawnTimer()},2200);
 });
 
 // 初始化
