@@ -431,7 +431,7 @@ function startGame(){
   const t1=spawnTask();
   setTimeout(()=>{
     spawnTask();renderTaskBar();
-    if(t1)say(`${t1.ch.name}在${t1.pickup}楼等电梯`,`${t1.ch.nameEn} is on floor ${NUM_EN[t1.pickup]}`);
+    if(t1)say(`去${t1.pickup}楼`,`Floor ${NUM_EN[t1.pickup]}`);
   },800);
 }
 
@@ -442,7 +442,7 @@ function startSpawnTimer(){
     if(st.busy)return;
     if(st.tasks.filter(t=>!t.done).length<MAX_QUEUE){
       const t=spawnTask();
-      if(t){pickupChime();say(`${t.ch.name}在${t.pickup}楼等电梯`,`${t.ch.nameEn} on floor ${NUM_EN[t.pickup]}`);}
+      if(t)pickupChime();
     }
   },8000);
 }
@@ -450,13 +450,12 @@ function startSpawnTimer(){
 /* === Floor button click === */
 function onFloorBtn(floor,btn){
   ensureAC();if(st.busy)return;boop();
-  say(String(floor),`Floor ${NUM_EN[floor]}`);
-  if(st.doorOpen){btn.classList.add('wrong');setTimeout(()=>btn.classList.remove('wrong'),350);say('先关门哦','Close the door first');return}
+  if(st.doorOpen){btn.classList.add('wrong');setTimeout(()=>btn.classList.remove('wrong'),350);buzz();return}
   const hasW=st.tasks.some(t=>!t.done&&!t.pickedUp&&t.pickup===floor);
   const hasD=st.passengers.some(p=>p.drop===floor);
   if(!hasW&&!hasD&&st.passengers.length===0){
     const nt=st.tasks.find(t=>!t.done&&!t.pickedUp);
-    if(nt&&floor!==nt.pickup){btn.classList.add('wrong');buzz();setTimeout(()=>btn.classList.remove('wrong'),350);say(`去${nt.pickup}楼接${nt.ch.name}`,`Go to floor ${NUM_EN[nt.pickup]}`);return}
+    if(nt&&floor!==nt.pickup){btn.classList.add('wrong');buzz();setTimeout(()=>btn.classList.remove('wrong'),350);return}
   }
   fbtns.forEach((b,i)=>{if(b)b.classList.remove('lit')});btn.classList.add('lit');moveTo(floor);
 }
@@ -465,7 +464,6 @@ function moveTo(floor){
   if(floor===st.floor){afterArrive();return}
   st.busy=true;const dir=floor>st.floor?'up':'down';
   $('#cabin-light').classList.add('moving');updateLED(st.floor,dir);
-  say(dir==='up'?'上升':'下降',dir==='up'?'Going up':'Going down');
   placeCabin(floor);
   const dist=Math.abs(floor-st.floor),duration=500+dist*150;
   let f=st.floor;const step=dir==='up'?1:-1;
@@ -481,20 +479,14 @@ function moveTo(floor){
 function afterArrive(){
   const hasW=st.tasks.some(t=>!t.done&&!t.pickedUp&&t.pickup===st.floor);
   const hasD=st.passengers.some(p=>p.drop===st.floor);
-  if(hasW||hasD){setTimeout(()=>say('到了，按开门','Arrived! Press OPEN'),250)}
-  else{
-    const nd=st.passengers.length>0?st.passengers[0]:null;
-    const np=st.tasks.find(t=>!t.done&&!t.pickedUp);
-    if(nd)setTimeout(()=>say(`送到${nd.drop}楼`,`Go to floor ${NUM_EN[nd.drop]}`),250);
-    else if(np)setTimeout(()=>say(`去${np.pickup}楼接${np.ch.name}`,`Go to floor ${NUM_EN[np.pickup]}`),250);
-  }
+  if(hasW||hasD){setTimeout(()=>say('按开门','Press OPEN'),250)}
 }
 
 /* === Open door === */
 function onOpen(){
   ensureAC();if(st.busy)return;
-  if(st.doorOpen){say('门已经开着啦','Door is already open');return}
-  st.busy=true;st.doorOpen=true;$('#cabin').classList.add('open');boop();say('开门','Open');
+  if(st.doorOpen)return;
+  st.busy=true;st.doorOpen=true;$('#cabin').classList.add('open');boop();
   setTimeout(()=>{
     let any=false;
     const exiting=st.passengers.filter(p=>p.drop===st.floor);
@@ -521,23 +513,16 @@ function onOpen(){
           if(el){el.style.transition='all .4s';el.style.opacity='0';el.style.transform='scale(.3)';setTimeout(()=>el.remove(),400)}
         });
         updateCabinDisplay();cuteMelody();renderTaskBar();
-        if(st.passengers.length>0){const p=st.passengers[0];say(`送${p.ch.name}去${p.drop}楼`,`Take ${p.ch.nameEn} to floor ${NUM_EN[p.drop]}`);}
+        if(st.passengers.length>0){const p=st.passengers[0];say(`送去${p.drop}楼`,`Floor ${NUM_EN[p.drop]}`);}
         st.busy=false;
         setTimeout(()=>{
           if(st.tasks.filter(t=>!t.done).length<MAX_QUEUE){
-            const nt=spawnTask();
-            if(nt){pickupChime();say(`${nt.ch.name}在${nt.pickup}楼等电梯`,`${nt.ch.nameEn} on floor ${NUM_EN[nt.pickup]}`);}
+            const nt=spawnTask();if(nt)pickupChime();
           }
         },2000);
       },exiting.length>0?800:0);
     }else st.busy=false;
-    if(!any){
-      st.busy=false;
-      const nd=st.passengers.length>0?st.passengers[0]:null;
-      const np=st.tasks.find(t=>!t.done&&!t.pickedUp);
-      if(nd)say(`这里没人下车，去${nd.drop}楼`,`No one gets off here, go to floor ${NUM_EN[nd.drop]}`);
-      else if(np)say(`这里没人，去${np.pickup}楼接${np.ch.name}`,`No one here, go to floor ${NUM_EN[np.pickup]}`);
-    }
+    if(!any)st.busy=false;
     renderTaskBar();
   },650);
 }
@@ -546,11 +531,11 @@ function updateCabinDisplay(){$('#cabin-inside').innerHTML=st.passengers.map(p=>
 
 function onClose(){
   ensureAC();if(st.busy)return;
-  if(!st.doorOpen){say('门已经关着','Door is already closed');return}
-  st.doorOpen=false;$('#cabin').classList.remove('open');boop();say('关门','Close');
+  if(!st.doorOpen)return;
+  st.doorOpen=false;$('#cabin').classList.remove('open');boop();
 }
 
-function showPraise(){const[zh,en]=PRAISE[Math.floor(Math.random()*PRAISE.length)];say(zh,en);cuteMelody();miniConfetti()}
+function showPraise(){cuteMelody();miniConfetti()}
 
 function miniConfetti(){
   const colors=['#ff6b9d','#ffd166','#06d6a0','#c850c0','#118ab2','#ff6b35'];
@@ -569,7 +554,7 @@ function miniConfetti(){
 function showVictory(){
   if(spawnTimer)clearInterval(spawnTimer);
   victoryFanfare();
-  say('恭喜你，全部送达！你是最棒的小司机！','Congratulations! You are the best elevator driver!');
+  say('恭喜通关','You win');
   totalStars+=st.score;localStorage.setItem('elevator_total_stars',String(totalStars));
   const titles=['太棒啦!','你是冠军!','超级厉害!','完美通关!'];
   const subs=['You are AMAZING!','Champion!','SUPER STAR!','PERFECT!'];
@@ -627,18 +612,18 @@ function launchFireworks(){
 
 $('#v-again').addEventListener('click',()=>{
   $('#victory').classList.remove('show');st.score=0;$('#score-num').textContent='0';
-  ensureAC();say('再来一次',"Let's go again");
+  ensureAC();
   setTimeout(()=>{startGame();startSpawnTimer()},800);
 });
 
 function repeatHint(){
-  if(st.passengers.length>0)say(`送到${st.passengers[0].drop}楼`,`Go to floor ${NUM_EN[st.passengers[0].drop]}`);
-  else{const t=st.tasks.find(t=>!t.done&&!t.pickedUp);if(t)say(`去${t.pickup}楼接${t.ch.name}`,`Go to floor ${NUM_EN[t.pickup]}`);}
+  if(st.passengers.length>0)say(`${st.passengers[0].drop}楼`,`Floor ${NUM_EN[st.passengers[0].drop]}`);
+  else{const t=st.tasks.find(t=>!t.done&&!t.pickedUp);if(t)say(`${t.pickup}楼`,`Floor ${NUM_EN[t.pickup]}`);}
 }
 
 $('#go-btn').addEventListener('click',()=>{
   $('#intro').classList.add('hide');ensureAC();
-  say('欢迎来到皇家电梯，十层大冒险','Welcome to Royal Elevator, ten floors adventure');
+  say('出发','Go');
   cuteMelody();placeCabin(1,false);updateLED(1,'');
   setTimeout(()=>{startGame();startSpawnTimer()},2200);
 });
