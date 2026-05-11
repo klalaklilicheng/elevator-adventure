@@ -5,6 +5,9 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="皇家电梯">
+<meta name="theme-color" content="#764ba2">
+<link rel="manifest" href="manifest.json">
 <title>皇家电梯 · Royal Elevator</title>
 <style>
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;user-select:none;-webkit-user-select:none;margin:0;padding:0}
@@ -59,13 +62,13 @@ body{display:flex;align-items:center;justify-content:center;touch-action:manipul
   box-shadow:0 1px 2px rgba(0,0,0,.2);
 }
 
-#sound-toggle{
+.top-btn{
   background:rgba(255,255,255,.9);border:none;border-radius:50%;
   width:34px;height:34px;font-size:16px;cursor:pointer;
   box-shadow:0 2px 8px rgba(0,0,0,.1);flex-shrink:0;
 }
 
-/* === Building (flex:1, never overlaps panel) === */
+/* === Building === */
 #building{
   flex:1;display:flex;margin:0 10px;border-radius:16px;overflow:visible;min-height:0;
 }
@@ -132,7 +135,7 @@ body{display:flex;align-items:center;justify-content:center;touch-action:manipul
 #cabin-light.moving{background:#ff9800;box-shadow:0 0 6px #ff9800;animation:blink 1s infinite}
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.4}}
 
-/* === Control panel (flex-shrink:0, stays at bottom) === */
+/* === Control panel === */
 #panel{position:relative;z-index:40;padding:4px 8px;padding-bottom:max(4px,env(safe-area-inset-bottom,4px));flex-shrink:0}
 #panel-bg{background:rgba(255,255,255,.95);border-radius:18px;padding:8px 10px;box-shadow:0 -4px 24px rgba(0,0,0,.1)}
 
@@ -211,6 +214,141 @@ body{display:flex;align-items:center;justify-content:center;touch-action:manipul
 .confetti{position:absolute;pointer-events:none;border-radius:3px}
 .fw-particle{position:absolute;pointer-events:none;border-radius:50%}
 .fw-trail{position:absolute;pointer-events:none;border-radius:2px}
+
+/* === Install guide === */
+#install-guide{
+  position:absolute;inset:0;z-index:700;background:rgba(0,0,0,.6);
+  display:none;align-items:center;justify-content:center;
+  backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);
+}
+#install-guide.show{display:flex}
+.ig-content{
+  background:#fff;border-radius:24px;padding:32px 28px;max-width:360px;
+  text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.3);
+}
+.ig-icon{font-size:56px;margin-bottom:12px}
+.ig-title{font-size:22px;font-weight:900;color:#333;margin-bottom:16px}
+.ig-steps{text-align:left;margin-bottom:24px}
+.ig-steps p{font-size:15px;color:#555;margin-bottom:10px;line-height:1.5;display:flex;align-items:center;gap:6px}
+.ig-share{display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;background:#007aff;color:#fff;border-radius:8px;font-size:16px}
+#ig-close{
+  background:linear-gradient(135deg,#667eea,#764ba2);color:#fff;border:none;
+  padding:12px 36px;border-radius:999px;font-size:17px;font-weight:700;cursor:pointer;
+}
+
+/* ============================================
+   TABLET (min-width 700px) — bigger elements
+   ============================================ */
+@media (min-width:700px){
+  #game{max-width:none}
+  #top-bar{padding:10px 20px;min-height:56px;gap:10px}
+  #score-box{font-size:22px;padding:8px 18px;border-radius:24px}
+  #score-box .star{font-size:24px}
+  .task-card{padding:6px 14px;border-radius:16px;gap:6px}
+  .tc-from,.tc-to{font-size:13px}
+  .tc-arrow{font-size:9px}
+  .top-btn{width:44px;height:44px;font-size:20px}
+  #building{margin:0 16px}
+  .fl-num{font-size:13px;width:28px}
+  .waiting-dest{font-size:9px;padding:0 4px}
+  #shaft{width:clamp(80px,12vw,140px)}
+  #led-display{padding:2px 10px}
+  #led-floor{font-size:20px}
+  #led-dir{font-size:12px}
+  #cabin{border-width:3px;border-radius:10px}
+  #cabin-inside{font-size:18px}
+  #panel{padding:8px 16px;padding-bottom:max(8px,env(safe-area-inset-bottom,8px))}
+  #panel-bg{border-radius:22px;padding:14px 16px}
+  #floor-grid{gap:8px;margin-bottom:10px}
+  .fbtn{font-size:22px;border-width:3px;min-width:52px;min-height:52px}
+  .fbtn small{font-size:8px}
+  .dbtn{padding:14px;font-size:18px;border-radius:18px;gap:2px}
+  .dbtn small{font-size:12px}
+  #door-row{gap:10px}
+  #intro .chars{font-size:96px}
+  #intro h1{font-size:52px}
+  #intro h2{font-size:24px;margin-bottom:48px}
+  #go-btn{padding:22px 68px;font-size:30px}
+  #victory .crown{font-size:110px}
+  .collected-star{font-size:42px}
+  #total-stars-box .count{font-size:34px}
+  #victory .v-again{padding:18px 52px;font-size:24px}
+  .ig-content{max-width:420px;padding:40px 36px}
+  .ig-icon{font-size:72px}
+  .ig-title{font-size:26px}
+  .ig-steps p{font-size:17px}
+}
+
+/* ============================================
+   LANDSCAPE on tablet — side-by-side layout
+   ============================================ */
+@media (min-width:700px) and (orientation:landscape){
+  #game{
+    display:grid;
+    grid-template-rows:auto 1fr;
+    grid-template-columns:1fr auto;
+  }
+  #top-bar{grid-column:1/-1;grid-row:1}
+  #building{grid-column:1;grid-row:2;margin:0 20px 8px}
+  #panel{
+    grid-column:2;grid-row:2;
+    width:clamp(290px,32vw,400px);
+    display:flex;align-items:center;
+    padding:8px 16px 8px 4px;
+  }
+  #panel-bg{width:100%;height:auto;display:flex;flex-direction:column;justify-content:center}
+  #floor-grid{gap:10px;margin-bottom:14px}
+  .fbtn{min-width:54px;min-height:54px;font-size:24px}
+  .fbtn small{font-size:9px}
+  .dbtn{padding:16px;font-size:20px}
+  .dbtn small{font-size:13px}
+  #door-row{gap:12px}
+  #shaft{width:clamp(90px,10vw,150px)}
+  #cabin-inside{font-size:20px}
+  .fl-num{font-size:14px;width:32px}
+}
+
+/* ============================================
+   LANDSCAPE on phone — compact adjustments
+   ============================================ */
+@media (max-width:699px) and (orientation:landscape){
+  #game{
+    display:grid;
+    grid-template-rows:auto 1fr;
+    grid-template-columns:1fr auto;
+    max-width:none;
+  }
+  #top-bar{grid-column:1/-1;grid-row:1;min-height:36px;padding:4px 10px}
+  #score-box{font-size:14px;padding:3px 10px}
+  #score-box .star{font-size:15px}
+  .task-card{padding:3px 6px}
+  .tc-from,.tc-to{font-size:9px}
+  .top-btn{width:28px;height:28px;font-size:13px}
+  #building{grid-column:1;grid-row:2;margin:0 8px 4px}
+  .fl-num{font-size:8px;width:14px}
+  #shaft{width:clamp(40px,10vw,60px)}
+  #led-display{padding:0 4px}
+  #led-floor{font-size:12px}
+  #led-dir{font-size:7px}
+  #panel{
+    grid-column:2;grid-row:2;
+    width:clamp(160px,30vw,220px);
+    display:flex;align-items:center;
+    padding:4px 6px 4px 0;
+  }
+  #panel-bg{width:100%;padding:6px 8px;border-radius:14px}
+  #floor-grid{gap:3px;margin-bottom:4px}
+  .fbtn{font-size:12px;min-width:28px;min-height:28px;border-width:2px}
+  .fbtn small{display:none}
+  .dbtn{padding:6px;font-size:11px;border-radius:10px}
+  .dbtn small{font-size:7px}
+  #door-row{gap:4px}
+}
+
+/* Standalone mode (added to home screen) — hide install guide trigger */
+@media (display-mode:standalone){
+  #install-guide{display:none!important}
+}
 </style>
 </head>
 <body>
@@ -226,7 +364,8 @@ body{display:flex;align-items:center;justify-content:center;touch-action:manipul
 <div id="top-bar">
   <div id="score-box"><span class="star">⭐</span><span id="score-num">0</span></div>
   <div id="task-bar"></div>
-  <button id="sound-toggle">🔊</button>
+  <button class="top-btn" id="sound-toggle">🔊</button>
+  <button class="top-btn" id="fs-btn" title="全屏 Fullscreen">⛶</button>
 </div>
 
 <div id="building">
@@ -262,6 +401,19 @@ body{display:flex;align-items:center;justify-content:center;touch-action:manipul
   <button class="v-again" id="v-again">再玩一次 · Again</button>
 </div>
 
+<div id="install-guide">
+  <div class="ig-content">
+    <div class="ig-icon">📲</div>
+    <div class="ig-title">添加到主屏幕<br><small style="font-size:14px;font-weight:400;color:#888">Add to Home Screen</small></div>
+    <div class="ig-steps">
+      <p>1. 点击 Safari 底部的 <span class="ig-share">⬆</span> 分享按钮</p>
+      <p>2. 向下滑动，选择「添加到主屏幕」</p>
+      <p>3. 全屏运行，像 App 一样玩！</p>
+    </div>
+    <button id="ig-close">知道了 · Got it</button>
+  </div>
+</div>
+
 </div>
 
 <script>
@@ -284,11 +436,8 @@ const CHARACTERS=[
 ];
 
 const PRAISE=[
-  ['太棒了!','Great job!'],
-  ['你真厉害!','Amazing!'],
-  ['完美!','Perfect!'],
-  ['好聪明!','So smart!'],
-  ['超级棒!','Wonderful!'],
+  ['太棒了!','Great job!'],['你真厉害!','Amazing!'],['完美!','Perfect!'],
+  ['好聪明!','So smart!'],['超级棒!','Wonderful!'],
 ];
 
 const $=s=>document.querySelector(s);
@@ -308,7 +457,7 @@ function victoryFanfare(){const n=[523,523,523,659,784,784,659,784,1047],d=[.1,.
 function pickupChime(){playTone(659,.1);setTimeout(()=>playTone(784,.1),100);setTimeout(()=>playTone(1047,.15),200)}
 function starChime(i){playTone(523+i*80,.15,'sine',.1)}
 
-/* === Speech (fixed: natural pitch, better voice selection) === */
+/* === Speech === */
 const synth=window.speechSynthesis;
 let zhV=null,enV=null;
 function pickV(){
@@ -330,10 +479,7 @@ function pump(){
   const{text,lang}=sq.shift();spk=true;
   try{
     const u=new SpeechSynthesisUtterance(text);
-    u.lang=lang;
-    u.rate=lang.startsWith('zh')?0.9:0.85;
-    u.pitch=1.0;
-    u.volume=1.0;
+    u.lang=lang;u.rate=lang.startsWith('zh')?0.9:0.85;u.pitch=1.0;u.volume=1.0;
     if(lang.startsWith('zh')&&zhV)u.voice=zhV;
     if(lang.startsWith('en')&&enV)u.voice=enV;
     u.onend=u.onerror=()=>{spk=false;setTimeout(pump,120)};
@@ -361,6 +507,36 @@ for(let f=1;f<=5;f++){const b=document.createElement('button');b.className='fbtn
 $('#btn-open').addEventListener('click',onOpen);
 $('#btn-close').addEventListener('click',onClose);
 $('#sound-toggle').addEventListener('click',()=>{ensureAC();repeatHint()});
+
+/* === Fullscreen === */
+const fsBtn=$('#fs-btn');
+fsBtn.addEventListener('click',()=>{
+  const el=document.documentElement;
+  if(document.fullscreenElement||document.webkitFullscreenElement){
+    (document.exitFullscreen||document.webkitExitFullscreen).call(document);
+  }else if(el.requestFullscreen){
+    el.requestFullscreen();
+  }else if(el.webkitRequestFullscreen){
+    el.webkitRequestFullscreen();
+  }
+});
+if(!document.documentElement.requestFullscreen&&!document.documentElement.webkitRequestFullscreen){
+  fsBtn.style.display='none';
+}
+
+/* === Install guide === */
+(function(){
+  const isStandalone=window.navigator.standalone||window.matchMedia('(display-mode:standalone)').matches;
+  const isTouchPad=/iPad/i.test(navigator.userAgent)||(/Macintosh/i.test(navigator.userAgent)&&'ontouchend' in document);
+  const shown=localStorage.getItem('elevator_ig_shown');
+  if(isTouchPad&&!isStandalone&&!shown){
+    setTimeout(()=>$('#install-guide').classList.add('show'),1500);
+  }
+})();
+$('#ig-close').addEventListener('click',()=>{
+  $('#install-guide').classList.remove('show');
+  localStorage.setItem('elevator_ig_shown','1');
+});
 
 /* === Character rendering === */
 function renderChar(ch,size){
@@ -397,7 +573,7 @@ function getActiveTask(){
   return st.tasks.find(t=>!t.done&&!t.pickedUp);
 }
 
-/* === Waiting characters on floors === */
+/* === Waiting characters === */
 function renderWaiting(){
   document.querySelectorAll('.waiting-char').forEach(el=>el.remove());
   st.tasks.forEach(t=>{
@@ -441,8 +617,7 @@ function startSpawnTimer(){
   spawnTimer=setInterval(()=>{
     if(st.busy)return;
     if(st.tasks.filter(t=>!t.done).length<MAX_QUEUE){
-      const t=spawnTask();
-      if(t)pickupChime();
+      const t=spawnTask();if(t)pickupChime();
     }
   },8000);
 }
@@ -550,7 +725,7 @@ function miniConfetti(){
   }
 }
 
-/* === Victory with fireworks & star collection === */
+/* === Victory === */
 function showVictory(){
   if(spawnTimer)clearInterval(spawnTimer);
   victoryFanfare();
